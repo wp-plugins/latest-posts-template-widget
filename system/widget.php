@@ -1,29 +1,15 @@
 <?php
 /**
  * Name: Latest Posts Template Widget Widget
- * Version: 0.1
+ * Version: 0.2
  * Author: Takashi Kitajima
  * Author URI: http://2inc.org
  * Created: June 4, 2014
- * Modified:
+ * Modified: September 5, 2015
  * Text Domain: lptw
  * Domain Path: /languages/
- * License: GPL2
- *
- * Copyright 2014 Takashi Kitajima (email : inc@2inc.org)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2, as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * License: GPL2 or later
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  */
 class Latest_Posts_Template_Widget_Widget extends WP_Widget {
 
@@ -154,23 +140,35 @@ class Latest_Posts_Template_Widget_Widget extends WP_Widget {
 	}
 	public function _parse_template( $matches ) {
 		global $post;
+		$value = null;
 		if ( preg_match( '/^thumbnail( .+)?$/', $matches[1], $reg ) ) {
 			$size = 'post-thumbnail';
 			if ( !empty( $reg[1] ) ) {
 				$size = trim( $reg[1] );
 			}
-			return get_the_post_thumbnail( get_the_ID(), $size );
+			$value = get_the_post_thumbnail( get_the_ID(), $size );
 		}
 		switch ( $matches[1] ) {
 			case 'permalink' :
-				return get_permalink();
+				$value = get_permalink();
 				break;
 			case 'post_date' :
-				return get_the_date();
+				$value = get_the_date();
+				break;
+			case 'post_title' :
+				$value = get_the_title();
+				break;
+			case 'post_content' :
+				$value = get_the_content();
+				break;
+			case 'post_excerpt' :
+				$value = get_the_excerpt();
 				break;
 		}
-		if ( isset( $post->$matches[1] ) )
-			return $post->$matches[1];
+		if ( isset( $post->$matches[1] ) ) {
+			$value = $post->$matches[1];
+		}
+		return apply_filters( 'lptw_tag', $value, $matches[1], get_the_ID() );
 	}
 
 	/**
